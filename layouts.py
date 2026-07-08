@@ -211,6 +211,22 @@ def _add_overlays(
 
 
 # ---------------------------------------------------------------------------
+# Overlay presence helper
+# ---------------------------------------------------------------------------
+
+def _caption_reserve(caption: str, weather: Optional[str]) -> int:
+    """
+    Return the height to reserve for the caption bar.
+    If there is nothing to display at the bottom, return 0 so the image
+    can expand to fill the full screen.
+    Clock is positioned at the top and does not need bottom space.
+    """
+    if caption or weather:
+        return config.CAPTION_HEIGHT
+    return 0
+
+
+# ---------------------------------------------------------------------------
 # Individual layouts
 # ---------------------------------------------------------------------------
 
@@ -228,11 +244,12 @@ def landscape_layout(
     When STYLE is "auto" the image is face-aware cropped to fill the screen.
     When STYLE is "gallery" it is fitted inside the mount with no cropping.
     """
-    col    = _caption_col()
-    canvas = _make_canvas(width, height)
+    col        = _caption_col()
+    canvas     = _make_canvas(width, height)
+    cap_h      = _caption_reserve(caption, weather)
 
     usable_w = width  - config.MARGIN
-    usable_h = height - config.CAPTION_HEIGHT - config.MARGIN
+    usable_h = height - cap_h - config.MARGIN
 
     if config.STYLE == "auto":
         from face_detect import face_aware_crop
@@ -242,7 +259,7 @@ def landscape_layout(
         photo.thumbnail((usable_w, usable_h), Image.Resampling.LANCZOS)
 
     x = (width  - photo.width)  // 2
-    y = (height - config.CAPTION_HEIGHT - photo.height) // 2
+    y = (height - cap_h - photo.height) // 2
     canvas.paste(photo, (x, y))
 
     draw = ImageDraw.Draw(canvas)
@@ -262,7 +279,8 @@ def portrait_layout(
     Portrait photo on a blurred copy of itself (BLUR_PORTRAITS=True),
     or a plain gallery mount (BLUR_PORTRAITS=False).
     """
-    col = _caption_col()
+    col   = _caption_col()
+    cap_h = _caption_reserve(caption, weather)
 
     if config.BLUR_PORTRAITS:
         # Background: scale to fill, blur heavily, then darken/lighten
@@ -279,12 +297,12 @@ def portrait_layout(
     photo.thumbnail(
         (
             width  - config.MARGIN * 2,
-            height - config.CAPTION_HEIGHT - config.MARGIN * 2,
+            height - cap_h - config.MARGIN * 2,
         ),
         Image.Resampling.LANCZOS,
     )
     x = (width  - photo.width)  // 2
-    y = (height - config.CAPTION_HEIGHT - photo.height) // 2
+    y = (height - cap_h - photo.height) // 2
     canvas.paste(photo, (x, y))
 
     draw = ImageDraw.Draw(canvas)
@@ -307,6 +325,7 @@ def panorama_layout(
     """
     col    = _caption_col()
     canvas = _make_canvas(width, height)
+    cap_h  = _caption_reserve(caption, weather)
 
     # Scale to fill width exactly (no horizontal cropping)
     scale   = width / img.width
@@ -314,7 +333,7 @@ def panorama_layout(
     photo   = img.resize((width, new_h), Image.Resampling.LANCZOS)
 
     # Centre vertically in the space above the caption bar
-    available_h = height - config.CAPTION_HEIGHT
+    available_h = height - cap_h
     y = max(0, (available_h - new_h) // 2)
     canvas.paste(photo, (0, y))
 
@@ -331,19 +350,20 @@ def gallery_layout(
     weather: Optional[str],
 ) -> Image.Image:
     """Classic gallery mount: background surround and a fine border."""
-    col    = _caption_col()
+    col   = _caption_col()
+    cap_h = _caption_reserve(caption, weather)
     canvas = _make_canvas(width, height)
 
     photo = img.copy()
     photo.thumbnail(
         (
             width  - config.MARGIN * 2,
-            height - config.CAPTION_HEIGHT - config.MARGIN * 2,
+            height - cap_h - config.MARGIN * 2,
         ),
         Image.Resampling.LANCZOS,
     )
     x = (width  - photo.width)  // 2
-    y = (height - config.CAPTION_HEIGHT - photo.height) // 2
+    y = (height - cap_h - photo.height) // 2
     canvas.paste(photo, (x, y))
 
     draw = ImageDraw.Draw(canvas)

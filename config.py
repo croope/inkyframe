@@ -18,11 +18,19 @@ DB_FILE     = Path("/home/chris/.photoframe.db")
 STYLE = "auto"
 
 # ---------------------------------------------------------------------------
+# Physical frame orientation
+#   "landscape" — frame is wider than tall (default)
+#   "portrait"  — frame is rotated 90° so it is taller than wide
+# ---------------------------------------------------------------------------
+
+FRAME_ORIENTATION = "portrait"
+
+# ---------------------------------------------------------------------------
 # Overlays
 # ---------------------------------------------------------------------------
 
-SHOW_WEATHER   = False   # Requires WEATHER_API_KEY and WEATHER_LOCATION below
-SHOW_CLOCK     = False   # Tiny clock in top-right corner
+SHOW_WEATHER   = True   # Requires WEATHER_API_KEY and WEATHER_LOCATION below
+SHOW_CLOCK     = True   # Tiny clock in top-right corner
 SHOW_DATE      = True    # EXIF date in caption
 SHOW_LOCATION  = True    # GPS-derived place name in caption (needs internet or
                          # the optional reverse_geocoder package)

@@ -66,6 +66,11 @@ def main() -> None:
     width   = display.width
     height  = display.height
 
+    # If the frame is mounted in portrait, swap the canvas dimensions so
+    # layouts treat the rotated frame as the working area.
+    if config.FRAME_ORIENTATION == "portrait":
+        width, height = height, width
+
     # Ensure the metadata cache table exists
     metadata.init_db()
 
@@ -130,6 +135,11 @@ def main() -> None:
     # -----------------------------------------------------------------------
     # Push to display
     # -----------------------------------------------------------------------
+
+    # Rotate the finished image to match the physical frame orientation
+    if config.FRAME_ORIENTATION == "portrait":
+        final = final.rotate(90, expand=True)
+
     display.set_image(final)
     display.show()
 
