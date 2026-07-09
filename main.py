@@ -47,11 +47,44 @@ import weather
 # Image enhancement
 # ---------------------------------------------------------------------------
 
+WARMTH_BOOST_CONFIG = {
+    'red_boost': 1.15,      # +15% red
+    'green_reduce': 0.92,   # -8% green
+    'blue_reduce': 0.75,    # -25% blue
+    'brightness': 1.12,     # +12% brightness
+    'saturation': 0.3       # Very low saturation for Spectra
+}
+
 def _enhance(img: Image.Image) -> Image.Image:
     """Gentle colour/contrast boost that suits e-paper's limited gamut."""
     img = ImageEnhance.Contrast(img).enhance(1.12)
     img = ImageEnhance.Color(img).enhance(1.05)
     img = ImageEnhance.Sharpness(img).enhance(1.10)
+    return img
+
+def _apply_warmth_boost(img: Image.Image) -> Image.Image:
+    """
+    Apply aggressive warmth boost via RGB channel adjustments.
+    Boosts red, reduces blue to add warmth to skin tones.
+    """
+    # Step 1: Increase brightness
+    brightness = ImageEnhance.Brightness(img)
+    img = brightness.enhance(WARMTH_BOOST_CONFIG['brightness'])
+
+    # Step 2: Channel balancing for warmth
+    r, g, b = img.split()
+
+    r_enhancer = ImageEnhance.Brightness(r)
+    r = r_enhancer.enhance(WARMTH_BOOST_CONFIG['red_boost'])
+
+    g_enhancer = ImageEnhance.Brightness(g)
+    g = g_enhancer.enhance(WARMTH_BOOST_CONFIG['green_reduce'])
+
+    b_enhancer = ImageEnhance.Brightness(b)
+    b = b_enhancer.enhance(WARMTH_BOOST_CONFIG['blue_reduce'])
+
+    img = Image.merge('RGB', (r, g, b))
+
     return img
 
 
@@ -100,7 +133,8 @@ def main() -> None:
     img = Image.open(photo_path)
     img = ImageOps.exif_transpose(img)   # correct camera rotation silently
     img = img.convert("RGB")
-    img = _enhance(img)
+    #img = _enhance(img)
+    img = _apply_warmth_boost(img)
 
     # -----------------------------------------------------------------------
     # Metadata (cached after the first run)
