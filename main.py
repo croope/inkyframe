@@ -30,8 +30,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 
 # Uncomment for HEIC / HEIF support (pip install pillow-heif):
-# from pillow_heif import register_heif_opener
-# register_heif_opener()
+from pillow_heif import register_heif_opener
+register_heif_opener()
 
 from PIL import Image, ImageEnhance, ImageOps
 
@@ -136,9 +136,14 @@ def main() -> None:
     # Push to display
     # -----------------------------------------------------------------------
 
+    # I messed up and installed the screen upside own in the frame so rotate 180 only landscape
+    #if config.FRAME_ORIENTATION == "landscape":
+    final = final.rotate(180, expand=True)
+
     # Rotate the finished image to match the physical frame orientation
     if config.FRAME_ORIENTATION == "portrait":
         final = final.rotate(90, expand=True)
+        final = final.rotate(180, expand=True)
 
     display.set_image(final)
     display.show()

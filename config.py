@@ -64,7 +64,7 @@ LONGITUDE = 1.1608
 # Weather  (OpenWeatherMap free tier — https://openweathermap.org/api)
 # ---------------------------------------------------------------------------
 
-WEATHER_API_KEY  = ""           # Your API key
+WEATHER_API_KEY  = "73e8204fa13a6049e07f1b4609cd778b"           # Your API key
 WEATHER_LOCATION = "Ipswich,GB"  # City name accepted by OWM
 WEATHER_UNITS    = "metric"     # "metric" (°C) or "imperial" (°F)
 
@@ -89,7 +89,7 @@ CAPTION_HEIGHT = 48
 # Supported image extensions
 # ---------------------------------------------------------------------------
 
-SUPPORTED = {".jpg", ".jpeg", ".png", ".bmp", ".gif", ".webp", ".heic", ".HEIC"}
+SUPPORTED = {".jpg", ".jpeg", ".png", ".bmp", ".gif", ".webp", ".heic"}
 
 # ---------------------------------------------------------------------------
 # Playlist

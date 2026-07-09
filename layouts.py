@@ -401,8 +401,8 @@ def render(
     """
     Choose the best layout for this image and return the final PIL Image.
     """
-    orientation = meta.get("orientation", "landscape")
-    face_rects  = meta.get("face_rects", [])
+    orientation  = meta.get("orientation", "landscape")
+    face_rects   = meta.get("face_rects", [])
 
     if orientation == "panorama":
         return panorama_layout(img, width, height, caption, weather)
