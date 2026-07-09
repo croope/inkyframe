@@ -91,6 +91,11 @@ def _caption_col() -> Tuple[int, int, int]:
     return _CAPTION_LIGHT if _is_night() else _CAPTION_WARM
 
 
+def _stroke_fill(colour: Tuple[int, int, int]) -> Tuple[int, int, int]:
+    luminance = 0.299 * colour[0] + 0.587 * colour[1] + 0.114 * colour[2]
+    return (255, 255, 255) if luminance < 140 else (0, 0, 0)
+
+
 def _border_col() -> Tuple[int, int, int]:
     return _BORDER_NIGHT if _is_night() else _BORDER_DAY
 
@@ -158,6 +163,17 @@ def _draw_caption(
         x = width - config.MARGIN - tw
     else:
         x = config.MARGIN
+
+    # Draw a solid caption background for better visibility against busy
+    # photo bottoms. Use a colour that contrasts with the caption text.
+    bar_height = config.CAPTION_HEIGHT
+    bar_fill = (32, 32, 32) if colour == _CAPTION_LIGHT else (248, 245, 238)
+    draw.rectangle((0, height - bar_height, width, height), fill=bar_fill)
+
+    stroke = _stroke_fill(colour)
+    outline_offsets = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+    for ox, oy in outline_offsets:
+        draw.text((x + ox, y + oy), text, fill=stroke, font=f)
     draw.text((x, y), text, fill=colour, font=f)
 
 
