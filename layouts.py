@@ -310,6 +310,45 @@ def portrait_layout(
     return canvas
 
 
+def landscape_on_portrait_layout(
+    img:     Image.Image,
+    width:   int,
+    height:  int,
+    caption: str,
+    weather: Optional[str],
+) -> Image.Image:
+    """
+    Landscape photo on a portrait frame.
+
+    Scales the photo to fill the full canvas width (no side cropping).
+    A blurred, darkened copy of the photo fills the bands above and below
+    instead of a flat background colour.
+    """
+    col   = _caption_col()
+    cap_h = _caption_reserve(caption, weather)
+
+    # Blurred background — scale to fill the whole canvas
+    bg = ImageOps.fit(img, (width, height), Image.Resampling.LANCZOS)
+    bg = bg.filter(ImageFilter.GaussianBlur(radius=22))
+    brightness = 0.35 if _is_night() else 0.55
+    bg     = ImageEnhance.Brightness(bg).enhance(brightness)
+    canvas = bg.convert("RGB")
+
+    # Foreground: scale to full width, no horizontal cropping
+    scale  = width / img.width
+    new_h  = int(img.height * scale)
+    photo  = img.resize((width, new_h), Image.Resampling.LANCZOS)
+
+    # Centre vertically in the space above the caption bar
+    available_h = height - cap_h
+    y = max(0, (available_h - new_h) // 2)
+    canvas.paste(photo, (0, y))
+
+    draw = ImageDraw.Draw(canvas)
+    _add_overlays(draw, caption, weather, width, height, col)
+    return canvas
+
+
 def panorama_layout(
     img:     Image.Image,
     width:   int,
@@ -408,10 +447,16 @@ def render(
         return panorama_layout(img, width, height, caption, weather)
 
     if orientation == "portrait":
+        if config.FRAME_ORIENTATION == "portrait" and config.STYLE == "auto":
+            # Photo and frame share orientation — fill the canvas like landscape does
+            return landscape_layout(img, width, height, caption, weather, face_rects)
         return portrait_layout(img, width, height, caption, weather, face_rects)
 
-    if orientation == "landscape" and config.STYLE == "auto":
-        return landscape_layout(img, width, height, caption, weather, face_rects)
+    if orientation == "landscape":
+        if config.FRAME_ORIENTATION == "portrait" and config.STYLE == "auto":
+            return landscape_on_portrait_layout(img, width, height, caption, weather)
+        if config.STYLE == "auto":
+            return landscape_layout(img, width, height, caption, weather, face_rects)
 
     # square, or landscape with STYLE="gallery"
     return gallery_layout(img, width, height, caption, weather)
